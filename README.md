@@ -84,6 +84,10 @@ docker run -d \
 | **Check Resource Usage** | `docker stats coconut-engine` |
 | **Enter Shell (Debug)** | `docker exec -it coconut-engine bash` |
 | **Inspect Env Config** | `docker inspect coconut-engine | grep -A 20 "Env"` |
+| **Reset Knowledge** | `docker exec redis-stack redis-cli FT.DROPINDEX coconut_idx` |
+| **Clear Logic Cache** | `docker exec redis-stack redis-cli FT.DROPINDEX coconut_cache_idx` |
+| **Debug Auth Keys** | `docker exec redis-stack redis-cli KEYS "api_key:*"` |
+| **Clean Deep Exit** | `docker system prune -a --volumes` |
 
 ---
 

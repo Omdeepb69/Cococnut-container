@@ -1,100 +1,153 @@
-# 🥥 Project Coconut: The Production-Grade AI Harness
+# 🥥 Project Coconut: The Ultimate AI MLOps Harness
 
-Project Coconut is a professional, modular AI ecosystem designed to turn raw models into production-ready services. It implements a complete 5-layer architecture for secure, context-aware, and observable AI deployments.
-
----
-
-## 🏗️ The 5-Layer Architecture
-
-Coconut is built on the philosophy of "The Shell, The Guard, The Core, The Wisdom, and The Factory."
-
-1.  **Infrastructure (The Shell)**: Containerized orchestration using Docker Compose and high-performance **Redis Stack** for vector and key-value storage.
-2.  **Identity & Security (The Guard)**: Secure API Key management using SHA-256 hashing and **Atomic Rate Limiting** to prevent usage leaks.
-3.  **Brain & Memory (The Core)**: Integration with the **omdeep22/Gonyai-v1** model featuring a sliding-window memory system to maintain conversation flow.
-4.  **RAG & Knowledge (The Wisdom)**: Deep semantic retrieval using **Redis Vector Search** and `sentence-transformers` for fact-grounded responses.
-5.  **MLOps & CI/CD (The Factory)**: Automated build pipelines with **GitHub Actions**, vulnerability scanning with **Trivy**, and real-time observability via `/metrics`.
+**Project Coconut** is a high-performance, containerized ecosystem designed to transform raw language models into secure, context-aware production services. It bridges the gap between a model file and a professional API by providing a complete infrastructure stack for inference, memory, RAG, and security.
 
 ---
 
-## 🚀 Quick Start (Local Setup)
+## 🏛️ The 5-Layer Design System
 
-### 1. Prerequisites
-- Docker & Docker Compose
-- Python 3.9+ (for ingestion scripts)
+Coconut is built on a modular "Modular Armor" architecture, where each layer serves a specific production purpose:
 
-### 2. Launch the Stack
+### 1. The Shell (Infrastructure)
+*   **Technology**: Docker Compose, Redis Stack 7.4.
+*   **Purpose**: Provides the backbone of the system. We use **Redis Stack** not just for caching, but as a high-performance Vector Database and state store.
+*   **Feature**: Multi-service orchestration ensures that the API and the Database are always in sync and isolated.
+
+### 2. The Guard (Identity & Security)
+*   **Technology**: FastAPI Security, SHA-256 Hashing, Atomic Redis Windows.
+*   **Purpose**: Protects your AI from abuse and unauthorized access.
+*   **Features**:
+    *   **Self-Service Keys**: Generate hashed API keys on the fly.
+    *   **Tiered Rate Limiting**: Limit users based on their 'Pro' or 'Free' status.
+    *   **Atomic Logic**: Prevents "window leaking" to ensure strict compliance with usage limits.
+
+### 3. The Core (Brain & Memory)
+*   **Technology**: Hugging Face Transformers, PyTorch (CPU-Optimized), Redis Lists.
+*   **Purpose**: The actual AI engine.
+*   **Features**:
+    *   **Gonyai-v1 Support**: Native integration with Konkani-language optimized models.
+    *   **Sliding Window Memory**: Unlike basic APIs, Coconut remembers the last N messages of a conversation, allowing for natural, multi-turn dialogues.
+
+### 4. The Wisdom (RAG & Knowledge)
+*   **Technology**: RediSearch, Sentence-Transformers (`all-MiniLM-L6-v2`).
+*   **Purpose**: Grounds the AI in facts to prevent hallucinations.
+*   **Features**:
+    *   **Semantic Search**: Uses vector embeddings to find the most relevant context for any prompt.
+    *   **Dynamic Injection**: Automatically augments user prompts with retrieved knowledge before inference.
+
+### 5. The Factory (MLOps & CI/CD)
+*   **Technology**: GitHub Actions, Trivy Security, Prometheus-compatible metrics.
+*   **Purpose**: Automates the lifecycle of the AI container.
+*   **Features**:
+    *   **Auto-Scanning**: Every push triggers a security scan for OS and library vulnerabilities.
+    *   **Auto-Publish**: Automatically ships verified images to Docker Hub.
+    *   **Observability**: Track latency and inference counts via the `/metrics` endpoint.
+
+---
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+*   Ubuntu/Linux (Optimized)
+*   Docker & Docker Compose
+*   Python 3.9+ (External)
+
+### Step 1: Clone and Launch
 ```bash
-# Start the API and Vector DB
+git clone https://github.com/Omdeepb69/Cococnut-container.git
+cd coconut
 docker compose up --build -d
 ```
 
-### 3. Initialize Knowledge (RAG)
-Inject the initial facts into the vector database:
+### Step 2: Initialize the Wisdom (RAG)
+Inject the knowledge base into the vector index:
 ```bash
 docker compose exec coconut-api python3 ingest.py
 ```
 
 ---
 
-## 📖 Tutorial: Using the Harness
+## 📖 Complete Feature Tutorial
 
-### 🔐 Step 1: Generate an API Key
-Coconut doesn't use raw passwords. Generate a secure, hashed key:
+### 1. Generating Your First API Key
+To interact with the `/chat` endpoint, you need an API key. 
 ```bash
-# Tiers: free or pro
+# Generate a PRO tier key
 curl -X POST "http://localhost:8000/generate-key?tier=pro"
 ```
-**Important**: Save the `api_key` shown. It is hashed immediately and cannot be recovered if lost.
+**Response Schema:**
+```json
+{
+  "api_key": "cc_live_...",
+  "tier": "pro",
+  "limit": 100,
+  "window": 60
+}
+```
 
-### 🧠 Step 2: Chat with Context
-Ask a question. Coconut will search its "Knowledge" (RAG) and "Memory" before responding:
+### 2. Performing a RAG-Powered Chat
+Ask a question about the system. The API will search Redis for context and ground the response.
 ```bash
 curl -X POST "http://localhost:8000/chat" \
-     -H "X-API-Key: YOUR_GENERATED_KEY" \
+     -H "X-API-Key: YOUR_KEY" \
      -H "Content-Type: application/json" \
      -d '{
-       "prompt": "What are the 5 layers of Project Coconut?",
-       "session_id": "tutorial_user_01"
+       "prompt": "What is Layer 4 of Coconut?",
+       "session_id": "user_session_99"
      }'
 ```
 
-### 📊 Step 3: Monitor Performance
-Check how many inferences have been made and the health of the cache:
+### 3. Testing Conversation Memory
+The `session_id` allows the "Brain" to remember you.
+*   **Input 1**: "My name is Omdeep."
+*   **Input 2**: "What is my name?" -> **Expected**: "Your name is Omdeep."
+
+### 4. Monitoring the Harness
+Access the OTLP-compatible metrics endpoint:
 ```bash
 curl http://localhost:8000/metrics
 ```
+You can see `inference_count`, `last_latency`, and `cache_hits`.
 
 ---
 
-## 🧪 Testing Before Publishing
+## 🛠️ Master Commands Reference
 
-Before you `docker push`, verify the stack integrity with these commands:
+### Docker Management
+| Goal | Command |
+| :--- | :--- |
+| **Start Services** | `docker compose up -d` |
+| **Stop & Remove** | `docker compose down` |
+| **View API Logs** | `docker compose logs -f coconut-api` |
+| **Restart AI Engine** | `docker compose restart coconut-api` |
 
-| Test Item | Command | Expected Result |
-| :--- | :--- | :--- |
-| **Security** | `curl -I -X POST http://localhost:8000/chat` | `401 Unauthorized` |
-| **Rate Limit** | Run a loop of 11 requests with a `free` key | Request 11 should return `429` |
-| **RAG** | Ask "What is Layer 4?" | Response should mention "The Wisdom" or "Vector Search" |
-| **Memory** | Say "My name is Coconut", then ask "What is my name?" | Response should remember "Coconut" |
+### Knowledge & Vector DB
+| Goal | Command |
+| :--- | :--- |
+| **Reset Index** | `docker compose exec redis-stack redis-cli FT.DROPINDEX coconut_idx` |
+| **View Vector Info** | `docker compose exec redis-stack redis-cli FT.INFO coconut_idx` |
+| **Manual Ingest** | `docker compose exec coconut-api python3 ingest.py` |
 
----
-
-## 🚢 Publishing to your Repo
-
-1.  **Tag the image**:
-    ```bash
-    docker tag coconut-coconut-api your_dockerhub_user/coconut:v1.0
-    ```
-2.  **Push to the cloud**:
-    ```bash
-    docker push your_dockerhub_user/coconut:v1.0
-    ```
-
----
-
-## 🛠️ Maintenance & Cleanup
-- **Clear Vectors**: `redis-cli -p 6380 FT.DROPINDEX coconut_idx`
-- **Reset Usage**: `redis-cli -p 6380 DEL usage:<hashed_key>`
+### Security & Troubleshooting
+| Goal | Command |
+| :--- | :--- |
+| **Check Health** | `curl http://localhost:8000/health` |
+| **Inspect Redis** | `docker compose exec redis-stack redis-cli` |
+| **Test Rate Limit** | `for i in {1..15}; do curl -X POST http://localhost:8000/chat -H "X-API-Key: YOUR_KEY"; done` |
 
 ---
-*Created with ❤️ by the Project Coconut Team.*
+
+## 🚢 CI/CD Workflow Setup
+
+Your repository is equipped with a professional GitHub Action:
+
+1.  **Code Check**: Triggers on every push to `main`.
+2.  **Security Scan**: Runs **Trivy** to find vulnerabilities.
+3.  **Docker Push**: If tests and scans pass, it pushes to Docker Hub.
+
+**Required GitHub Secrets:**
+- `DOCKERHUB_USERNAME`: Your Docker Hub username.
+- `DOCKERHUB_TOKEN`: Your Docker Hub Access Token.
+
+---
+*Powered by Project Coconut - Bridging AI and Production.*

@@ -9,11 +9,7 @@
 1.  **Hardware Auto-Sensing**: Automatically detects NVIDIA GPUs and applies FP16 precision. Falls back to optimized FP32 on CPUs.
 2.  **Semantic Inference Cache**: Verified **99% latency reduction** for repeat queries. Responds in <1s by reusing previous model logic.
 3.  **Dynamic Feature Toggles**: Enable/Disable RAG, Semantic Caching, and Session Memory instantly via environment variables.
-4. **Step 4: CI/CD Automation**
-   Automate your releases with **GitHub Actions**. See our [CI/CD Pipeline Tutorial](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/ci_cd_tutorial.md) for details on:
-   - Automated Docker Builds.
-   - **Trivy** Security Scanning (Fail-on-Vulnerability).
-   - Automated production deployment to Docker Hub.
+4.  **Auto-MLOps (CI/CD)**: Integrated **GitHub Actions** with **Trivy** security scanning and automated Docker Hub deployment.
 
 ---
 
@@ -75,11 +71,6 @@ Turn features on/off instantly via these flags in `docker-compose.yml`:
 - `ENABLE_CACHE`: Set `False` to disable semantic response reuse.
 - `ENABLE_MEMORY`: Set `False` to disable session history.
 
-### 3. Hardware Optimization
-By default, the system uses `DEVICE=auto`. To force a specific mode:
-- For **GPU**: Set `DEVICE=cuda`.
-- For **CPU**: Set `DEVICE=cpu`.
-
 ---
 
 ## 💻 Technical Command Reference
@@ -100,7 +91,9 @@ By default, the system uses `DEVICE=auto`. To force a specific mode:
 - **Cold Start (CPU)**: ~160s
 - **Hot Cache (Reuse)**: **< 1s**
 
-For 1 Million Users, see the [Scaling Roadmap](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md).
+### 🌐 Advanced Production Guides
+- [Scaling to 1 Million Users](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md)
+- [CI/CD Pipeline Tutorial](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/ci_cd_tutorial.md)
 
 ---
 *Created with ❤️ by the Project Coconut Team.*

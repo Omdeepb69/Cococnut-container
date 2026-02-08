@@ -1,4 +1,6 @@
-import os
+from typing import Optional, List
+from config import config
+
 try:
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -7,12 +9,12 @@ except ImportError:
     TRANSFORMERS_AVAILABLE = False
 
 class ModelEngine:
-    def __init__(self, model_id: str = "omdeep22/Gonyai-v1"):
-        self.model_id = model_id
+    def __init__(self, model_id: Optional[str] = None):
+        self.model_id = model_id or config.MODEL_ID
         self.model = None
         self.tokenizer = None
         self.device = "cpu"
-        self.dtype = None
+        self.dtype = torch.float32
         self.inference_count = 0
 
     def load_model(self):
@@ -20,18 +22,40 @@ class ModelEngine:
             print("WARNING: Transformers/Torch not installed. Running in MOCK mode.")
             return
 
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        # Hardware Auto-Detection
+        if config.DEVICE == "auto":
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        else:
+            self.device = config.DEVICE
 
-        print(f"Loading model {self.model_id} on {self.device}...")
+        # Precision Optimization
+        if self.device == "cuda":
+            self.dtype = torch.float16  # standard for GPUs
+        else:
+            self.dtype = torch.float32  # safest for CPU
+
+        print(f"Loading S-Tier Engine: {self.model_id} on {self.device}...")
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+            
+            load_kwargs = {
+                "trust_remote_code": True,
+                "torch_dtype": self.dtype,
+            }
+            
+            # Use device_map only if GPU is present for multi-GPU efficiency
+            if self.device == "cuda":
+                load_kwargs["device_map"] = "auto"
+            
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_id,
-                trust_remote_code=True,
-                torch_dtype=self.dtype
-            ).to(self.device)
-            print("Model loaded successfully.")
+                **load_kwargs
+            )
+            
+            if self.device != "cuda":
+                self.model = self.model.to(self.device)
+                
+            print(f"Model {self.model_id} loaded successfully.")
         except Exception as e:
             print(f"Error loading model: {e}")
 

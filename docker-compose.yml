@@ -8,19 +8,29 @@ services:
     environment:
       - REDIS_HOST=redis-stack
       - REDIS_PORT=6379
+      - MODEL_ID=${MODEL_ID:-omdeep22/Gonyai-v1}
+      - ENABLE_RAG=${ENABLE_RAG:-True}
+      - ENABLE_CACHE=${ENABLE_CACHE:-True}
+      - ENABLE_MEMORY=${ENABLE_MEMORY:-True}
+      - DEVICE=auto # detects cuda or cpu
     depends_on:
       - redis-stack
-    networks:
-      - coconut-net
+    # Uncomment to enable GPU pass-through
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
 
   redis-stack:
     image: redis/redis-stack:latest
     ports:
       - "6380:6379"
       - "8001:8001"
-    networks:
-      - coconut-net
+    volumes:
+      - redis_data:/data
 
-networks:
-  coconut-net:
-    driver: bridge
+volumes:
+  redis_data:

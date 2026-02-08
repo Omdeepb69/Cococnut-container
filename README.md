@@ -14,58 +14,72 @@
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Deep Setup & Installation Guide
 
-### 1. Zero-Config Launch
+### 1. Prerequisites
+- **Docker & Docker Compose** installed.
+- **NVIDIA Container Toolkit** (Optional, for GPU acceleration).
+- **8GB+ RAM** (16GB+ recommended for large models like Gonyai-v1).
+
+### 2. Quick Installation
 ```bash
-# Clone and start the stack
+# 1. Clone the repository
 git clone https://github.com/Omdeepb69/Cococnut-container.git
 cd coconut
+
+# 2. Launch the full stack
 docker compose up --build -d
+
+# 3. Verify Health
+curl http://localhost:8000/health
 ```
 
-### 2. Ingest Custom Knowledge (RAG)
-```bash
-# Ingest facts specifically into the vector index
-docker compose exec coconut-api python3 ingest.py "Project Coconut is an S-Tier AI harness by Omdeep."
-```
+### 3. Production Presets
+| Mode | Env Override | Best For |
+| :--- | :--- | :--- |
+| **Ultra-Fast (GPU)** | `DEVICE=cuda` | Real-time production chat (NVIDIA T4/A10G). |
+| **Budget (CPU)** | `DEVICE=cpu` | Internal testing / Low-cost VPS. |
+| **Knowledge-Only** | `ENABLE_RAG=True ENABLE_CACHE=False` | Pure information retrieval without response reuse. |
 
-### 3. Generate a Production Key
+---
+
+## 💻 Technical Command Reference (Cheat Sheet)
+
+### 🔑 Security & Identity
+**Generate a New API Key:**
 ```bash
+# Tier can be 'free' or 'pro'
 curl -X POST "http://localhost:8000/generate-key?tier=pro"
 ```
+*Note: Save your key! It is hashed in Redis and cannot be recovered if lost.*
+
+### 💬 Chat & Interaction (The AI Core)
+**Send a Chat Prompt (Requires X-API-Key Header):**
+```bash
+curl -X POST "http://localhost:8000/chat" \
+     -H "X-API-Key: YOUR_API_KEY_HERE" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "prompt": "Tell me about Project Coconut.",
+       "session_id": "test_user_001"
+     }'
+```
+
+### 🧠 Knowledge Management (RAG)
+**Inject Knowledge into the Vector DB:**
+```bash
+# Run from the host machine
+docker compose exec coconut-api python3 ingest.py "Project Coconut is the ultimate AI harness."
+```
+
+**Wipe the Knowledge Base (Hard Reset):**
+```bash
+docker compose exec redis-stack redis-cli FT.DROPINDEX coconut_idx
+```
 
 ---
 
-## 💻 Technical Command Reference
-
-### Docker Orchestration
-| Command | Purpose |
-| :--- | :--- |
-| `docker compose up -d` | Start the API and Redis stack in background. |
-| `docker compose build` | Rebuild the API image (after code changes). |
-| `docker compose logs -f` | Follow live server logs (useful for hardware detection). |
-| `docker compose down` | Stop and remove all containers. |
-
-### CLI Tools (Inside Container)
-| Command | Purpose |
-| :--- | :--- |
-| `python3 ingest.py "text"` | Manually add knowledge to the Vector DB for RAG. |
-| `python3 security.py` | (Utility) Internal hashing and key validation. |
-
-### REST API Endpoints
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/chat` | `POST` | Primary AI interface (requires `X-API-Key`). |
-| `/metrics` | `GET` | View inference counts and cache hit rates. |
-| `/health` | `GET` | System and Redis connectivity status. |
-| `/generate-key` | `POST` | Create a new `free` or `pro` API key. |
-
----
-
-## ⚙️ Configuration (Environment Variables)
-
-Customize your harness without touching a single line of code:
+## ⚙️ Engineering Configuration (Env Vars)
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
@@ -75,34 +89,33 @@ Customize your harness without touching a single line of code:
 | `ENABLE_CACHE` | `True` | Toggle Semantic Cache (Response Reuse). |
 | `ENABLE_MEMORY` | `True` | Toggle Sliding Window Memory. |
 | `DEVICE` | `auto` | Set manually to `cuda` or `cpu` if needed. |
+| `CACHE_THRESHOLD` | `0.85` | Similarity score required for a cache hit. |
 
 ---
 
-## 📈 Performance & Scaling
+## 📈 Monitoring & Health
 
-### Verified Metrics
-- **Initial Request**: ~160s (Generation on CPU).
-- **Secondary Request**: **~0.4s (Instant Cache Hit)**.
+### 1. Performance Metrics
+```bash
+curl http://localhost:8000/metrics
+```
+Returns `inference_count`, `cache_hits`, and active `device`.
 
-### 🌐 Scaling to 1 Million Users
+### 2. System Logs
+```bash
+# Follow live logs to see hardware detection in action
+docker compose logs -f coconut-api
+```
+
+---
+
+## 🌐 Scaling to 1 Million Users
+
 Project Coconut is built for enterprise growth. For deep details, see the [Scaling Roadmap](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md).
 
-1. **Phase 1: Horizontal API Scaling**
-   Deploy 100+ stateless `coconut-api` containers behind a Load Balancer (K8s/ECS).
-
-2. **Phase 2: Decoupled Inference**
-   Move the Model Engine to a dedicated "Model Farm" using **vLLM** or **Nvidia Triton** to avoid redundant VRAM usage.
-
-3. **Phase 3: Redis Cluster Clustering**
-   Distribute the Semantic Cache and Vector DB across a multi-node Redis cluster for sub-millisecond global orchestration.
-
----
-
-## 🛠️ Maintenance Reference
-- **Check Metrics**: `curl http://localhost:8000/metrics`
-- **Clear Vectors**: `redis-cli -p 6380 FT.DROPINDEX coconut_idx`
-- **Clear Cache**: `redis-cli -p 6380 FT.DROPINDEX coconut_cache_idx`
-- **View Health**: `curl http://localhost:8000/health`
+1. **Step 1: Cluster Deployment**: Move from Docker Compose to **Kubernetes (K8s)**.
+2. **Step 2: Model Farms**: Offload inference to **vLLM** or **Triton Inference Server**.
+3. **Step 3: Global State**: Multi-node **Redis Cluster** for sharded vector search.
 
 ---
 *Created with ❤️ by the Project Coconut Team.*

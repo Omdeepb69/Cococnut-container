@@ -9,7 +9,11 @@
 1.  **Hardware Auto-Sensing**: Automatically detects NVIDIA GPUs and applies FP16 precision. Falls back to optimized FP32 on CPUs.
 2.  **Semantic Inference Cache**: Verified **99% latency reduction** for repeat queries. Responds in <1s by reusing previous model logic.
 3.  **Dynamic Feature Toggles**: Enable/Disable RAG, Semantic Caching, and Session Memory instantly via environment variables.
-4.  **Stateless API Design**: Ready for horizontal scaling across Kubernetes clusters or multi-server farms.
+4. **Step 4: CI/CD Automation**
+   Automate your releases with **GitHub Actions**. See our [CI/CD Pipeline Tutorial](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/ci_cd_tutorial.md) for details on:
+   - Automated Docker Builds.
+   - **Trivy** Security Scanning (Fail-on-Vulnerability).
+   - Automated production deployment to Docker Hub.
 
 ---
 

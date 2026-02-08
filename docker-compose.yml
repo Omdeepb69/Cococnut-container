@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  coconut-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis-stack
+      - REDIS_PORT=6379
+    depends_on:
+      - redis-stack
+    networks:
+      - coconut-net
+
+  redis-stack:
+    image: redis/redis-stack:latest
+    ports:
+      - "6380:6379"
+      - "8001:8001"
+    networks:
+      - coconut-net
+
+networks:
+  coconut-net:
+    driver: bridge

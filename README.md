@@ -18,13 +18,17 @@
 Follow this exact sequence to go from a clean server to a production-ready AI backend.
 
 ### Step 1: Initialize the Stack
+
+**Option A: Local Build (Developer Mode)**
 ```bash
-# Option A: Clone and build (Best for developers)
 git clone https://github.com/Omdeepb69/Cococnut-container.git
 cd coconut
 docker compose up --build -d
+```
 
-# Option B: Pull from Registry (Fastest)
+**Option B: Docker Cloud (Production Mode)**
+```bash
+# Pull the pre-built S-Tier image
 docker pull omdeep22/coconut_can:latest
 ```
 
@@ -37,53 +41,67 @@ curl -X POST "http://localhost:8000/generate-key?tier=pro"
 > [!IMPORTANT]
 > Save the returned `api_key` immediately. It is hashed for security and cannot be shown again.
 
-### Step 3: Seed the Knowledge (RAG Ingestion)
-Populate your Vector Database with the facts the AI should know:
+---
+
+## 🐋 Docker Registry: The "Coconut Can" Deep Dive
+
+If you are using the image `omdeep22/coconut_can` without the full repository, use these commands to control the engine.
+
+### 1. Simple Run (Standalone)
 ```bash
-docker compose exec coconut-api python3 ingest.py "Project Coconut is a scalable AI harness by Omdeep."
+# Start a Redis dependency first
+docker run -d --name redis-brain -p 6380:6379 redis/redis-stack:latest
+
+# Launch the Coconut Can
+docker run -d \
+  --name coconut-engine \
+  -p 8000:8000 \
+  -e REDIS_HOST=host.docker.internal \
+  -e REDIS_PORT=6380 \
+  omdeep22/coconut_can:latest
 ```
 
-### Step 4: Verify the Pipeline
+### 2. Full Ingestion (Adding Data)
 ```bash
-# Replace YOUR_KEY with the key from Step 2
-curl -X POST "http://localhost:8000/chat" \
-     -H "X-API-Key: YOUR_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{"prompt": "What is Project Coconut?", "session_id": "init_test"}'
+# Run ingestion inside the active container
+docker exec -it coconut-engine python3 ingest.py "The secret verification code is COCO-99."
 ```
+
+### 3. Hardware Acceleration (NVIDIA GPU)
+```bash
+docker run -d \
+  --name coconut-gpu \
+  --gpus all \
+  -p 8000:8000 \
+  -e DEVICE=cuda \
+  omdeep22/coconut_can:latest
+```
+
+### 4. System Maintenance & Log Monitoring
+| Task | Command |
+| :--- | :--- |
+| **Follow Live AI Logic** | `docker logs -f coconut-engine` |
+| **Check Resource Usage** | `docker stats coconut-engine` |
+| **Enter Shell (Debug)** | `docker exec -it coconut-engine bash` |
+| **Inspect Env Config** | `docker inspect coconut-engine | grep -A 20 "Env"` |
 
 ---
 
 ## 🛠️ How to "Edit Setup" (Configuration)
 
-Project Coconut is designed to be modified without changing code. All configuration happens in the `docker-compose.yml` file.
+Project Coconut is designed to be modified without changing code. You can inject these as environment variables (`-e`).
 
 ### 1. Changing the AI Model
-To swap the "Brain", edit the `MODEL_ID` in `docker-compose.yml`:
-```yaml
-environment:
-  - MODEL_ID=gpt2  # Change this to any HuggingFace Repo ID
+To swap the "Brain", set the `MODEL_ID`:
+```bash
+docker run -e MODEL_ID=gpt2 omdeep22/coconut_can:latest
 ```
-Then run: `docker compose up -d` to reload.
 
 ### 2. Toggling Production Features
-Turn features on/off instantly via these flags in `docker-compose.yml`:
-- `ENABLE_RAG`: Set `False` to disable knowledge-grounding.
-- `ENABLE_CACHE`: Set `False` to disable semantic response reuse.
-- `ENABLE_MEMORY`: Set `False` to disable session history.
-
----
-
-## 💻 Technical Command Reference
-
-| Area | Command | Purpose |
-| :--- | :--- | :--- |
-| **Lifecycle** | `docker compose up -d` | Start/Update the stack. |
-| **Lifecycle** | `docker compose down` | Fully stop the system. |
-| **Logs** | `docker compose logs -f` | Watch live hardware detection. |
-| **Knowledge** | `python3 ingest.py "text"` | Add data to RAG database. |
-| **Metrics** | `curl localhost:8000/metrics` | View cache hit rates & count. |
-| **Security** | `curl localhost:8000/health` | Check API & Redis health. |
+- `ENABLE_RAG=False`: Disables knowledge lookup.
+- `ENABLE_CACHE=False`: Disables semantic reuse (forces fresh AI generation every time).
+- `ENABLE_MEMORY=False`: Disables session history.
+- `CACHE_THRESHOLD=0.90`: Makes the semantic cache harder to hit (for more precise matches).
 
 ---
 

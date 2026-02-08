@@ -41,6 +41,34 @@ curl -X POST "http://localhost:8000/generate-key?tier=pro"
 > [!IMPORTANT]
 > Save the returned `api_key` immediately. It is hashed for security and cannot be shown again.
 
+### Step 4: Verify the Pipeline
+```bash
+# Replace YOUR_KEY with the key from Step 2
+curl -X POST "http://localhost:8000/chat" \
+     -H "X-API-Key: YOUR_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"prompt": "What is Project Coconut?", "session_id": "init_test"}'
+```
+
+---
+
+## 🧩 Universal Model Compatibility
+
+Project Coconut's S-Tier Engine is built on the industry-standard `AutoModelForCausalLM` and `AutoTokenizer` frameworks. This means you can swap the "Brain" with **almost any model on Hugging Face** simply by changing the `MODEL_ID`.
+
+### Supported Model Families
+- **Mistral / Mixtral**: `mistralai/Mistral-7B-Instruct-v0.2`
+- **Llama 3 / 2**: `meta-llama/Meta-Llama-3-8B-Instruct`
+- **Gemma**: `google/gemma-7b-it`
+- **Falcon**: `tiiuae/falcon-7b-instruct`
+- **GPT-2 / Neo**: `gpt2` (Great for low-resource testing)
+
+### How it works?
+The harness uses `apply_chat_template`, which automatically detects and applies the correct prompt format (System/User/Assistant) for whichever model you choose. No manual prompt engineering required!
+
+> [!TIP]
+> **Resource Planning**: Large models (7B+ parameters) require significant VRAM/RAM. Ensure your server has 16GB+ RAM for 7B models on CPU, or 24GB+ VRAM for GPU deployment.
+
 ---
 
 ## 🐋 Docker Registry: The "Coconut Can" Deep Dive

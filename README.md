@@ -10,112 +10,93 @@
 2.  **Semantic Inference Cache**: Verified **99% latency reduction** for repeat queries. Responds in <1s by reusing previous model logic.
 3.  **Dynamic Feature Toggles**: Enable/Disable RAG, Semantic Caching, and Session Memory instantly via environment variables.
 4.  **Stateless API Design**: Ready for horizontal scaling across Kubernetes clusters or multi-server farms.
-5.  **Clean CLI Ingestion**: Modular ingestion script for populating the vector database with production knowledge.
 
 ---
 
-## 🚀 Deep Setup & Installation Guide
+## 🚀 The S-Tier Setup Workflow (Step-by-Step)
 
-### 1. Prerequisites
-- **Docker & Docker Compose** installed.
-- **NVIDIA Container Toolkit** (Optional, for GPU acceleration).
-- **8GB+ RAM** (16GB+ recommended for large models like Gonyai-v1).
+Follow this exact sequence to go from a clean server to a production-ready AI backend.
 
-### 2. Quick Installation
+### Step 1: Initialize the Stack
 ```bash
-# 1. Clone the repository
+# Clone the repo
 git clone https://github.com/Omdeepb69/Cococnut-container.git
 cd coconut
 
-# 2. Launch the full stack
+# Build and start in detached mode
 docker compose up --build -d
-
-# 3. Verify Health
-curl http://localhost:8000/health
 ```
 
-### 3. Production Presets
-| Mode | Env Override | Best For |
-| :--- | :--- | :--- |
-| **Ultra-Fast (GPU)** | `DEVICE=cuda` | Real-time production chat (NVIDIA T4/A10G). |
-| **Budget (CPU)** | `DEVICE=cpu` | Internal testing / Low-cost VPS. |
-| **Knowledge-Only** | `ENABLE_RAG=True ENABLE_CACHE=False` | Pure information retrieval without response reuse. |
-
----
-
-## 💻 Technical Command Reference (Cheat Sheet)
-
-### 🔑 Security & Identity
-**Generate a New API Key:**
+### Step 2: Establish Identity (Generate API Key)
+The API is locked by default. Generate your first production key:
 ```bash
-# Tier can be 'free' or 'pro'
+# This creates a 'pro' tier key with 100 req/min limit
 curl -X POST "http://localhost:8000/generate-key?tier=pro"
 ```
-*Note: Save your key! It is hashed in Redis and cannot be recovered if lost.*
+> [!IMPORTANT]
+> Save the returned `api_key` immediately. It is hashed for security and cannot be shown again.
 
-### 💬 Chat & Interaction (The AI Core)
-**Send a Chat Prompt (Requires X-API-Key Header):**
+### Step 3: Seed the Knowledge (RAG Ingestion)
+Populate your Vector Database with the facts the AI should know:
 ```bash
+docker compose exec coconut-api python3 ingest.py "Project Coconut is a scalable AI harness by Omdeep."
+```
+
+### Step 4: Verify the Pipeline
+```bash
+# Replace YOUR_KEY with the key from Step 2
 curl -X POST "http://localhost:8000/chat" \
-     -H "X-API-Key: YOUR_API_KEY_HERE" \
+     -H "X-API-Key: YOUR_KEY" \
      -H "Content-Type: application/json" \
-     -d '{
-       "prompt": "Tell me about Project Coconut.",
-       "session_id": "test_user_001"
-     }'
-```
-
-### 🧠 Knowledge Management (RAG)
-**Inject Knowledge into the Vector DB:**
-```bash
-# Run from the host machine
-docker compose exec coconut-api python3 ingest.py "Project Coconut is the ultimate AI harness."
-```
-
-**Wipe the Knowledge Base (Hard Reset):**
-```bash
-docker compose exec redis-stack redis-cli FT.DROPINDEX coconut_idx
+     -d '{"prompt": "What is Project Coconut?", "session_id": "init_test"}'
 ```
 
 ---
 
-## ⚙️ Engineering Configuration (Env Vars)
+## 🛠️ How to "Edit Setup" (Configuration)
 
-| Variable | Default | Description |
+Project Coconut is designed to be modified without changing code. All configuration happens in the `docker-compose.yml` file.
+
+### 1. Changing the AI Model
+To swap the "Brain", edit the `MODEL_ID` in `docker-compose.yml`:
+```yaml
+environment:
+  - MODEL_ID=gpt2  # Change this to any HuggingFace Repo ID
+```
+Then run: `docker compose up -d` to reload.
+
+### 2. Toggling Production Features
+Turn features on/off instantly via these flags in `docker-compose.yml`:
+- `ENABLE_RAG`: Set `False` to disable knowledge-grounding.
+- `ENABLE_CACHE`: Set `False` to disable semantic response reuse.
+- `ENABLE_MEMORY`: Set `False` to disable session history.
+
+### 3. Hardware Optimization
+By default, the system uses `DEVICE=auto`. To force a specific mode:
+- For **GPU**: Set `DEVICE=cuda`.
+- For **CPU**: Set `DEVICE=cpu`.
+
+---
+
+## 💻 Technical Command Reference
+
+| Area | Command | Purpose |
 | :--- | :--- | :--- |
-| `MODEL_ID` | `omdeep22/Gonyai-v1` | HuggingFace Repo for the Brain. |
-| `EMBEDDING_MODEL_ID` | `all-MiniLM-L6-v2` | Model used for RAG and Cache. |
-| `ENABLE_RAG` | `True` | Toggle Knowledge-Grounding. |
-| `ENABLE_CACHE` | `True` | Toggle Semantic Cache (Response Reuse). |
-| `ENABLE_MEMORY` | `True` | Toggle Sliding Window Memory. |
-| `DEVICE` | `auto` | Set manually to `cuda` or `cpu` if needed. |
-| `CACHE_THRESHOLD` | `0.85` | Similarity score required for a cache hit. |
+| **Lifecycle** | `docker compose up -d` | Start/Update the stack. |
+| **Lifecycle** | `docker compose down` | Fully stop the system. |
+| **Logs** | `docker compose logs -f` | Watch live hardware detection. |
+| **Knowledge** | `python3 ingest.py "text"` | Add data to RAG database. |
+| **Metrics** | `curl localhost:8000/metrics` | View cache hit rates & count. |
+| **Security** | `curl localhost:8000/health` | Check API & Redis health. |
 
 ---
 
-## 📈 Monitoring & Health
+## 📈 Performance & Scaling
 
-### 1. Performance Metrics
-```bash
-curl http://localhost:8000/metrics
-```
-Returns `inference_count`, `cache_hits`, and active `device`.
+- **Cold Start (CPU)**: ~160s
+- **Hot Cache (Reuse)**: **< 1s**
 
-### 2. System Logs
-```bash
-# Follow live logs to see hardware detection in action
-docker compose logs -f coconut-api
-```
-
----
-
-## 🌐 Scaling to 1 Million Users
-
-Project Coconut is built for enterprise growth. For deep details, see the [Scaling Roadmap](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md).
-
-1. **Step 1: Cluster Deployment**: Move from Docker Compose to **Kubernetes (K8s)**.
-2. **Step 2: Model Farms**: Offload inference to **vLLM** or **Triton Inference Server**.
-3. **Step 3: Global State**: Multi-node **Redis Cluster** for sharded vector search.
+For 1 Million Users, see the [Scaling Roadmap](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md).
 
 ---
 *Created with ❤️ by the Project Coconut Team.*

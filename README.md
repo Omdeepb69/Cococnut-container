@@ -19,12 +19,13 @@ Follow this exact sequence to go from a clean server to a production-ready AI ba
 
 ### Step 1: Initialize the Stack
 ```bash
-# Clone the repo
+# Option A: Clone and build (Best for developers)
 git clone https://github.com/Omdeepb69/Cococnut-container.git
 cd coconut
-
-# Build and start in detached mode
 docker compose up --build -d
+
+# Option B: Pull from Registry (Fastest)
+docker pull omdeep22/coconut_can:latest
 ```
 
 ### Step 2: Establish Identity (Generate API Key)

@@ -1,5 +1,11 @@
 # 🥥 Project Coconut: The S-Tier AI MLOps Harness (v1.1.0)
 
+[![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-yellow)](https://huggingface.co/omdeep22/Gonyai-v1)
+[![Hugging Face Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-blue)](https://huggingface.co/omdeep22/Konkani_books_corpus-v2)
+[![Docker Hub](https://img.shields.io/badge/Docker-Hub-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/omdeep22/coconut_can)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Author: Omdeepb69](https://img.shields.io/badge/GitHub-Omdeepb69-black)](https://github.com/Omdeepb69)
+
 **Project Coconut** is a professional, modular AI ecosystem designed for high-performance production deployments. It bridges the gap between raw models and scalable services with its unique 5-layer architecture.
 
 ---

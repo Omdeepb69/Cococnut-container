@@ -37,6 +37,32 @@ curl -X POST "http://localhost:8000/generate-key?tier=pro"
 
 ---
 
+## 💻 Technical Command Reference
+
+### Docker Orchestration
+| Command | Purpose |
+| :--- | :--- |
+| `docker compose up -d` | Start the API and Redis stack in background. |
+| `docker compose build` | Rebuild the API image (after code changes). |
+| `docker compose logs -f` | Follow live server logs (useful for hardware detection). |
+| `docker compose down` | Stop and remove all containers. |
+
+### CLI Tools (Inside Container)
+| Command | Purpose |
+| :--- | :--- |
+| `python3 ingest.py "text"` | Manually add knowledge to the Vector DB for RAG. |
+| `python3 security.py` | (Utility) Internal hashing and key validation. |
+
+### REST API Endpoints
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/chat` | `POST` | Primary AI interface (requires `X-API-Key`). |
+| `/metrics` | `GET` | View inference counts and cache hit rates. |
+| `/health` | `GET` | System and Redis connectivity status. |
+| `/generate-key` | `POST` | Create a new `free` or `pro` API key. |
+
+---
+
 ## ⚙️ Configuration (Environment Variables)
 
 Customize your harness without touching a single line of code:
@@ -59,16 +85,23 @@ Customize your harness without touching a single line of code:
 - **Secondary Request**: **~0.4s (Instant Cache Hit)**.
 
 ### 🌐 Scaling to 1 Million Users
-Project Coconut is ready for massive scale. See our [Scaling Roadmap](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md) for details on:
-- Horizontal scaling with Kubernetes.
-- Decoupled Inference (vLLM Model Farms).
-- Distributed Vector Database clustering.
+Project Coconut is built for enterprise growth. For deep details, see the [Scaling Roadmap](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md).
+
+1. **Phase 1: Horizontal API Scaling**
+   Deploy 100+ stateless `coconut-api` containers behind a Load Balancer (K8s/ECS).
+
+2. **Phase 2: Decoupled Inference**
+   Move the Model Engine to a dedicated "Model Farm" using **vLLM** or **Nvidia Triton** to avoid redundant VRAM usage.
+
+3. **Phase 3: Redis Cluster Clustering**
+   Distribute the Semantic Cache and Vector DB across a multi-node Redis cluster for sub-millisecond global orchestration.
 
 ---
 
 ## 🛠️ Maintenance Reference
 - **Check Metrics**: `curl http://localhost:8000/metrics`
 - **Clear Vectors**: `redis-cli -p 6380 FT.DROPINDEX coconut_idx`
+- **Clear Cache**: `redis-cli -p 6380 FT.DROPINDEX coconut_cache_idx`
 - **View Health**: `curl http://localhost:8000/health`
 
 ---

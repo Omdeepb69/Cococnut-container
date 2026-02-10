@@ -143,6 +143,31 @@ docker run -e MODEL_ID=gpt2 omdeep22/coconut_can:latest
 
 ---
 
+---
+
+## ☸️ S-Tier Kubernetes Scaling (1M+ Users)
+
+For hyper-scale deployments, use the provided Kubernetes manifests to orchestrate a resilient cluster.
+
+### 1. Unified Deployment
+Apply all manifests in the `k8s/` directory to launch the API, Redis cluster, and Auto-scaler:
+```bash
+kubectl apply -f k8s/
+```
+
+### 2. Manual Scaling (Emergency)
+If traffic spikes beyond the HPA's reaction time, scale manually:
+```bash
+kubectl scale deployment coconut-api --replicas=50
+```
+
+### 3. Monitoring the Cluster
+- **Pods Status**: `kubectl get pods -l app=coconut`
+- **Auto-scaling events**: `kubectl get hpa coconut-hpa`
+- **Service URL**: `kubectl get svc coconut-service`
+
+---
+
 ## 📈 Performance & Scaling
 
 - **Cold Start (CPU)**: ~160s

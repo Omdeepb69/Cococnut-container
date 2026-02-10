@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coconut-api
+  labels:
+    app: coconut
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: coconut
+  template:
+    metadata:
+      labels:
+        app: coconut
+    spec:
+      containers:
+        - name: coconut-api
+          image: omdeep22/coconut_can:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_HOST
+              value: "redis-cluster"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: MODEL_ID
+              value: "omdeep22/Gonyai-v1"
+            - name: DEVICE
+              value: "auto"
+          resources:
+            limits:
+              nvidia.com/gpu: 1 # Assuming nodes have GPUs
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 10

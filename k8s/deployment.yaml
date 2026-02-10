@@ -36,13 +36,13 @@ spec:
               memory: "4Gi"
           livenessProbe:
             httpGet:
-              path: /health
+              path: /health/ready
               port: 8000
-            initialDelaySeconds: 120
-            periodSeconds: 30
+            initialDelaySeconds: 200
+            periodSeconds: 20
           readinessProbe:
             httpGet:
-              path: /health
+              path: /health/ready
               port: 8000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 150 # Accommodate 15GB model loading
             periodSeconds: 10

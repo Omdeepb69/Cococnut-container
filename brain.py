@@ -29,11 +29,16 @@ class ModelEngine:
         else:
             self.device = config.DEVICE
 
-        # Precision Optimization
+        # Precision Optimization (FP16 vs BF16 vs FP32)
         if self.device == "cuda":
-            self.dtype = torch.float16  # standard for GPUs
+            # BF16 is superior for Ampere (RTX 30 series, A100) and later
+            if torch.cuda.get_device_capability()[0] >= 8:
+                print("Ampere+ Architecture detected. Using BF16 for maximum stability.")
+                self.dtype = torch.bfloat16
+            else:
+                self.dtype = torch.float16
         else:
-            self.dtype = torch.float32  # safest for CPU
+            self.dtype = torch.float32
 
         print(f"Loading S-Tier Engine: {self.model_id} on {self.device}...")
         try:
@@ -44,14 +49,14 @@ class ModelEngine:
                 "torch_dtype": self.dtype,
             }
 
-            # Quantization Logic (GPU only)
+            # Quantization Logic
             if self.device == "cuda":
                 load_kwargs["device_map"] = "auto"
                 if config.LOAD_IN_4BIT:
                     print("Enabling 4-bit Quantization (NF4)...")
                     load_kwargs["quantization_config"] = BitsAndBytesConfig(
                         load_in_4bit=True,
-                        bnb_4bit_compute_dtype=torch.float16,
+                        bnb_4bit_compute_dtype=self.dtype, # Match the auto-sensed dtype
                         bnb_4bit_quant_type="nf4",
                         bnb_4bit_use_double_quant=True
                     )
@@ -70,6 +75,15 @@ class ModelEngine:
             print(f"Model {self.model_id} loaded successfully.")
         except Exception as e:
             print(f"Error loading model: {e}")
+
+    @property
+    def ready(self) -> bool:
+        return self.model is not None
+
+    def get_model_hash(self) -> str:
+        """Returns a stable hash of the model ID for cache versioning."""
+        import hashlib
+        return hashlib.md5(self.model_id.encode()).hexdigest()[:8]
 
     def predict(self, prompt: str, history: list = None) -> str:
         self.inference_count += 1

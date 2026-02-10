@@ -19,9 +19,9 @@ class ConversationMemory:
         # Push to the right (end) of the list
         self.redis.rpush(key, message)
         
-        # Trim to keep last 10 messages (sliding window)
-        # We want the last 10, so we keep range: -10 to -1
-        self.redis.ltrim(key, -10, -1)
+        # Trim to keep last 15 messages (Sliding Window)
+        # LLM Context protection: prevents session overflow
+        self.redis.ltrim(key, -15, -1)
         
         # Refresh TTL
         self.redis.expire(key, self.ttl)

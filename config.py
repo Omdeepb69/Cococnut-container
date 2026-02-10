@@ -21,9 +21,13 @@ class Config:
     LOAD_IN_4BIT: bool = os.getenv("LOAD_IN_4BIT", "False").lower() == "true"
     LOAD_IN_8BIT: bool = os.getenv("LOAD_IN_8BIT", "False").lower() == "true"
     
-    # Security tiers
+    # Security & Admin
     RATE_LIMIT_FREE: int = 10
     RATE_LIMIT_PRO: int = 100
     RATE_WINDOW: int = 60 # seconds
+    ADMIN_ROOT_KEY: str = os.getenv("ADMIN_ROOT_KEY", "gonyai_master_secret_2026")
+    
+    # Memory/Context
+    MAX_HISTORY_TOKENS: int = int(os.getenv("MAX_HISTORY_TOKENS", 2048))
 
 config = Config()

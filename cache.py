@@ -8,10 +8,11 @@ INDEX_NAME = "coconut_idx"
 CACHE_INDEX_NAME = "coconut_cache_idx"
 
 class SemanticMapper:
-    def __init__(self, redis_client: Redis):
+    def __init__(self, redis_client: Redis, model_hash: str = "v1"):
         self.redis = redis_client
         self._model = None
         self.hits = 0
+        self.cache_idx = f"cache_idx_{model_hash}"
 
     @property
     def model(self):
@@ -37,7 +38,7 @@ class SemanticMapper:
         if not config.ENABLE_CACHE or not self.redis:
             return None
         
-        return self._search_vector_db(CACHE_INDEX_NAME, prompt, top_k=1, threshold=config.CACHE_THRESHOLD)
+        return self._search_vector_db(self.cache_idx, prompt, top_k=1, threshold=config.CACHE_THRESHOLD)
 
     def store_cache(self, prompt: str, response: str):
         """
@@ -48,7 +49,7 @@ class SemanticMapper:
 
         try:
             # Ensure index exists
-            self._ensure_index(CACHE_INDEX_NAME)
+            self._ensure_index(self.cache_idx)
             
             vector = self.model.encode(prompt).astype(np.float32).tobytes()
             key = f"cache:{hashlib.md5(prompt.encode()).hexdigest()}"

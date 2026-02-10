@@ -27,7 +27,8 @@ except Exception as e:
 # Initialize Core Components
 brain = ModelEngine()
 memory = ConversationMemory(redis_client)
-mapper = SemanticMapper(redis_client)
+# Cache versioned by model to prevent logical drift
+mapper = SemanticMapper(redis_client, model_hash=brain.get_model_hash())
 
 @app.on_event("startup")
 async def startup_event():
@@ -141,7 +142,14 @@ def metrics():
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 @app.post("/generate-key")
-def generate_key(tier: str = "free"):
+def generate_key(
+    tier: str = "free",
+    admin_key: str = Depends(lambda k=Depends(security.API_KEY_HEADER): k)
+):
+    """Protected admin endpoint to prevent key spamming."""
+    if admin_key != config.ADMIN_ROOT_KEY:
+        raise HTTPException(status_code=403, detail="Admin credentials required")
+        
     if not redis_client:
         raise HTTPException(status_code=503, detail="Database unavailable")
         
@@ -160,7 +168,9 @@ def generate_key(tier: str = "free"):
         "window": config.RATE_WINDOW
     }
 
-@app.get("/health")
-def health_check():
-    redis_status = "up" if (redis_client and redis_client.ping()) else "down"
-    return {"status": "ok", "redis": redis_status}
+@app.get("/health/ready")
+def readiness_check():
+    """Specific probe for K8s to detect when the AI Brain is loaded."""
+    if not brain.ready:
+        raise HTTPException(status_code=503, detail="Model still loading")
+    return {"status": "ready"}

@@ -143,6 +143,20 @@ docker run -e MODEL_ID=gpt2 omdeep22/coconut_can:latest
 
 ---
 
+### 3. Hardware Maximizer: 4/8-bit Quantization
+Run 7B+ models on consumer GPUs (T4, 3060) by enabling quantization:
+```bash
+docker run -e LOAD_IN_4BIT=True omdeep22/coconut_can
+```
+
+### 4. Production UX: Real-Time Streaming
+Use the new streaming endpoint for a high-end, typing-effect UI:
+```bash
+curl -X POST "http://localhost:8000/chat/stream" \
+     -H "Content-Type: application/json" \
+     -d '{"prompt": "Hello Gonyai!"}'
+```
+
 ---
 
 ## ☸️ S-Tier Kubernetes Scaling (1M+ Users)

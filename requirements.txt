@@ -8,3 +8,7 @@ python-dotenv
 requests
 numpy
 sentence-transformers
+bitsandbytes
+accelerate
+prometheus_client
+sentencepiece

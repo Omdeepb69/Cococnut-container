@@ -18,6 +18,8 @@ class Config:
     # Hardware/Performance
     DEVICE: str = os.getenv("DEVICE", "auto") # auto, cuda, cpu
     CACHE_THRESHOLD: float = float(os.getenv("CACHE_THRESHOLD", 0.85))
+    LOAD_IN_4BIT: bool = os.getenv("LOAD_IN_4BIT", "False").lower() == "true"
+    LOAD_IN_8BIT: bool = os.getenv("LOAD_IN_8BIT", "False").lower() == "true"
     
     # Security tiers
     RATE_LIMIT_FREE: int = 10

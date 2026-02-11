@@ -70,33 +70,36 @@ class SemanticMapper:
             vector = self.model.encode(prompt).astype(np.float32).tobytes()
             
             # Using DIALECT 2 for improved vector search performance
+            # and returning the 'score' (Cosine Distance)
             res = self.redis.execute_command(
                 "FT.SEARCH", index,
                 f"*=>[KNN {top_k} @vector $vec AS score]",
                 "PARAMS", "4", "vec", vector,
                 "SORTBY", "score",
                 "DIALECT", "2",
-                "RETURN", "2", "content", "response"
+                "RETURN", "3", "content", "response", "score"
             )
             
             if res and res[0] > 0:
-                # res[0] is count, res[1] is key name, res[2] is fields list
-                # Since we return 2 fields, we need to find which one is present
+                # res[1] is the key, res[2] is the list of fields/values
                 fields = res[2]
-                score = 0.0 # FT.SEARCH with KNN returns distance in a specific way if requested
-                
-                # Check for content (RAG) or response (Cache)
                 field_dict = {fields[i]: fields[i+1] for i in range(0, len(fields), 2)}
                 
-                # If we have a threshold, we should ideally check the 'score'
-                # but Redis KNN distance is 0.0 for exact matches (Cosine).
-                # For now, if we get a result from FT.SEARCH KNN, it's the closest.
+                # Verification Logic: Similarity = 1 - Distance
+                distance = float(field_dict.get("score", 1.0))
+                similarity = 1.0 - distance
+                
+                if threshold > 0 and similarity < threshold:
+                    print(f"Cache miss: Similarity {similarity:.4f} below threshold {threshold}")
+                    return None
+                    
                 if "response" in field_dict:
                     self.hits += 1
                     return field_dict["response"]
                 return field_dict.get("content")
                 
-        except Exception:
+        except Exception as e:
+            print(f"Vector search error: {e}")
             return None
         return None
 

@@ -180,6 +180,11 @@ kubectl scale deployment coconut-api --replicas=50
 - **Auto-scaling events**: `kubectl get hpa coconut-hpa`
 - **Service URL**: `kubectl get svc coconut-service`
 
+### 🛡️ Deployment Security (Crucial)
+For production, you **must** set an admin key to control key generation:
+- **Docker**: `docker run -e ADMIN_ROOT_KEY="secret" omdeep22/coconut`
+- **K8s**: Edit and apply `k8s/secrets.yaml` before deployment.
+
 ---
 
 ## 📈 Performance & Scaling

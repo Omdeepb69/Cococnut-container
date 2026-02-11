@@ -180,21 +180,51 @@ kubectl scale deployment coconut-api --replicas=50
 - **Auto-scaling events**: `kubectl get hpa coconut-hpa`
 - **Service URL**: `kubectl get svc coconut-service`
 
-### 🛡️ Deployment Security (Crucial)
-For production, you **must** set an admin key to control key generation:
-- **Docker**: `docker run -e ADMIN_ROOT_KEY="secret" omdeep22/coconut`
-- **K8s**: Edit and apply `k8s/secrets.yaml` before deployment.
-
 ---
 
-## 📈 Performance & Scaling
+## 🛠️ Gonyai Production Manual (The Master Commands)
 
-- **Cold Start (CPU)**: ~160s
-- **Hot Cache (Reuse)**: **< 1s**
+Use these essential commands to manage and secure your Gonyai Engine deployment.
 
-### 🌐 Advanced Production Guides
-- [Scaling to 1 Million Users](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/scaling_guide.md)
-- [CI/CD Pipeline Tutorial](file:///home/omdeep-borkar/.gemini/antigravity/brain/9f6d224a-9043-46d6-a450-a3e2bc1abf41/ci_cd_tutorial.md)
+### 🐳 1. Docker Deployment (Hardened)
+Run the AI engine with a secure **Admin Root Key** and **4-bit Quantization**.
+```bash
+docker run -d \
+  -p 8000:8000 \
+  -e ADMIN_ROOT_KEY="your_master_key_2026" \
+  -e LOAD_IN_4BIT=True \
+  -e DEVICE=cuda \
+  omdeep22/coconut:latest
+```
+
+### ☸️ 2. Kubernetes Setup (Resilient)
+```bash
+# 1. Apply Secrets (Edit k8s/secrets.yaml first)
+kubectl apply -f k8s/secrets.yaml
+
+# 2. Launch the Stack
+kubectl apply -f k8s/
+```
+
+### 🔑 3. Identity Management (Issue User Keys)
+Since the API is secured, use your `ADMIN_ROOT_KEY` to generate keys for your users.
+```bash
+curl -X POST "http://localhost:8000/generate-key?tier=pro" \
+     -H "X-API-KEY: your_master_key_2026"
+```
+
+### 📊 4. Observability & Health
+Monitor the "Brain" and track real-time cache hits/latency.
+- **Readiness**: `curl http://localhost:8000/health/ready`
+- **Metrics**: `curl http://localhost:8000/metrics`
+
+### 🧪 5. Real-Time Streaming Test
+```bash
+curl -N -X POST "http://localhost:8000/chat/stream" \
+     -H "X-API-KEY: user_api_key" \
+     -H "Content-Type: application/json" \
+     -d '{"prompt": "Give me a 5-step plan for global scale."}'
+```
 
 ---
 **Created with ❤️ by** [![Author: Omdeepb69](https://img.shields.io/badge/GitHub-Omdeepb69-black)](https://github.com/Omdeepb69)

@@ -32,6 +32,14 @@ mapper = SemanticMapper(redis_client, model_hash=brain.get_model_hash())
 
 @app.on_event("startup")
 async def startup_event():
+    # 🚨 SECURITY GUARD: Check for unset Admin Keys
+    if config.ADMIN_ROOT_KEY == "UNSET_PROTECT_YOUR_SERVICE":
+        print("\n" + "!" * 60)
+        print("🚨 SECURITY WARNING: ADMIN_ROOT_KEY is currently UNSET!")
+        print("Identity Management (/generate-key) will be DISBALED.")
+        print("Set your own secret via: docker run -e ADMIN_ROOT_KEY=my_secret")
+        print("!" * 60 + "\n")
+    
     brain.load_model()
 
 @app.get("/")

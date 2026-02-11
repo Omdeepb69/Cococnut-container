@@ -28,6 +28,11 @@ spec:
               value: "omdeep22/Gonyai-v1"
             - name: DEVICE
               value: "auto"
+            - name: ADMIN_ROOT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gonyai-secrets
+                  key: admin-root-key
           resources:
             limits:
               nvidia.com/gpu: 1 # Assuming nodes have GPUs

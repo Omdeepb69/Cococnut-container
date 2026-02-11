@@ -25,7 +25,7 @@ class Config:
     RATE_LIMIT_FREE: int = 10
     RATE_LIMIT_PRO: int = 100
     RATE_WINDOW: int = 60 # seconds
-    ADMIN_ROOT_KEY: str = os.getenv("ADMIN_ROOT_KEY", "gonyai_master_secret_2026")
+    ADMIN_ROOT_KEY: str = os.getenv("ADMIN_ROOT_KEY", "UNSET_PROTECT_YOUR_SERVICE")
     
     # Memory/Context
     MAX_HISTORY_TOKENS: int = int(os.getenv("MAX_HISTORY_TOKENS", 2048))

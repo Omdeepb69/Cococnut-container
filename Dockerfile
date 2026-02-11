@@ -1,6 +1,8 @@
 # Build Stage
 FROM python:3.9-slim as builder
 
+LABEL maintainer="Omdeep Borkar <omdeepborkar@gmail.com>"
+
 WORKDIR /app
 
 COPY requirements.txt .

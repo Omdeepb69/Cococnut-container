@@ -29,13 +29,13 @@ jobs:
         with:
           context: .
           push: false
-          tags: omdeep22/coconut-api:latest
+          tags: omdeep22/coconut:latest
           load: true
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "omdeep22/coconut-api:latest"
+          image-ref: "omdeep22/coconut:latest"
           format: "table"
           exit-code: "0"
           ignore-unfixed: true

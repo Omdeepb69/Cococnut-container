@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: coconut-api
-          image: omdeep22/coconut_can:latest
+          image: omdeep22/coconut:latest
           ports:
             - containerPort: 8000
           env:
